@@ -1043,8 +1043,8 @@ def main(_):
         FLAGS.summaries_dir + '/validation')
     
     # Set up checkpoints for continuous model training
-        model_saver = tf.train.Saver()
-        checkpoint_path = FLAGS.model_dir + r'/exp-1-model.ckpt'
+    model_saver = tf.train.Saver()
+    checkpoint_path = FLAGS.model_dir + r'/exp-1-model.ckpt'
 
     # If no checkpoints, set up all our weights to their initial default values.
     try:
