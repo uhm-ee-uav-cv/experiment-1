@@ -1000,7 +1000,7 @@ def main(_):
   do_distort_images = should_distort_images(
       FLAGS.flip_left_right, FLAGS.random_crop, FLAGS.random_scale,
       FLAGS.random_brightness)
-
+  
   with tf.Session(graph=graph) as sess:
     # Set up the image decoding sub-graph.
     jpeg_data_tensor, decoded_image_tensor = add_jpeg_decoding(
@@ -1041,10 +1041,19 @@ def main(_):
 
     validation_writer = tf.summary.FileWriter(
         FLAGS.summaries_dir + '/validation')
+    
+    # Set up checkpoints for continuous model training
+        model_saver = tf.train.Saver()
+        checkpoint_path = FLAGS.model_dir + r'/exp-1-model.ckpt'
 
-    # Set up all our weights to their initial default values.
-    init = tf.global_variables_initializer()
-    sess.run(init)
+    # If no checkpoints, set up all our weights to their initial default values.
+    try:
+        model_saver.restore(sess, checkpoint_path)
+        print('Model Variables Loaded')
+    except:
+        init = tf.global_variables_initializer()
+        sess.run(init)
+        print('Model Variables Initialized')
 
     # Run the training for as many cycles as requested on the command line.
     for i in range(FLAGS.how_many_training_steps):
@@ -1071,9 +1080,11 @@ def main(_):
                      ground_truth_input: train_ground_truth})
       train_writer.add_summary(train_summary, i)
 
-      # Every so often, print out how well the graph is training.
+      # Every so often, print out how well the graph is training and save a checkpoint.
       is_last_step = (i + 1 == FLAGS.how_many_training_steps)
       if (i % FLAGS.eval_step_interval) == 0 or is_last_step:
+        save_path = model_saver.save(sess, checkpoint_path)
+        tf.logging.info('Model checkpoint saved in: %s' % save_path)
         train_accuracy, cross_entropy_value = sess.run(
             [evaluation_step, cross_entropy],
             feed_dict={bottleneck_input: train_bottlenecks,
