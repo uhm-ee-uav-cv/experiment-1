@@ -1049,11 +1049,11 @@ def main(_):
     # If no checkpoints, set up all our weights to their initial default values.
     try:
         model_saver.restore(sess, checkpoint_path)
-        print('Model Variables Loaded')
+        tf.logging.info('Model Variables Loaded')
     except:
         init = tf.global_variables_initializer()
         sess.run(init)
-        print('Model Variables Initialized')
+        tf.logging.info('No checkpoint found - model variables initialized')
 
     # Run the training for as many cycles as requested on the command line.
     for i in range(FLAGS.how_many_training_steps):
